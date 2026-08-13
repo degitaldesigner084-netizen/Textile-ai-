@@ -1,1 +1,179 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Textile.ai</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f5f7fb;color:#172033}
+header{background:#111827;color:white;padding:22px;text-align:center}
+header h1{margin:0;font-size:30px}
+header p{margin:8px 0 0;color:#cbd5e1}
+.container{max-width:900px;margin:auto;padding:20px}
+.upload{background:white;border:2px dashed #94a3b8;border-radius:18px;padding:30px;text-align:center}
+input[type=file]{width:100%;padding:15px}
+.preview{margin-top:20px;text-align:center}
+canvas{max-width:100%;border-radius:12px;background:white;box-shadow:0 4px 20px #0002}
+.tools{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:20px}
+button{border:0;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;background:#2563eb;color:white}
+button:active{transform:scale(.98)}
+.download{background:#059669}
+.status{text-align:center;margin:18px 0;font-weight:bold}
+@media(max-width:600px){.tools{grid-template-columns:1fr}}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Textile.ai</h1>
+<p>Professional Textile Design Enhancement</p>
+</header>
+
+<div class="container">
+
+<div class="upload">
+<h2>Upload Textile Design</h2>
+<p>PNG, JPG or WEBP</p>
+<input id="fileInput" type="file" accept="image/*">
+</div>
+
+<div class="status" id="status">Upload an image to begin</div>
+
+<div class="preview">
+<canvas id="canvas"></canvas>
+</div>
+
+<div class="tools">
+<button onclick="enhance()">✨ HD Enhancement</button>
+<button onclick="clean()">🧹 Clean Design</button>
+<button onclick="repeat()">🔄 Seamless Repeat</button>
+<button onclick="sharpen()">🔍 Auto Detail</button>
+<button onclick="gray()">🎨 Color Separation</button>
+<button onclick="colorway()">🌈 Colorway</button>
+<button onclick="original()">↩️ Original</button>
+<button class="download" onclick="downloadImage()">⬇️ Download</button>
+</div>
+
+</div>
+
+<script>
+const input=document.getElementById("fileInput");
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+const status=document.getElementById("status");
+
+let img=new Image();
+let originalData=null;
+
+input.onchange=function(e){
+ const file=e.target.files[0];
+ if(!file)return;
+
+ const reader=new FileReader();
+
+ reader.onload=function(){
+  img.onload=function(){
+   canvas.width=img.width;
+   canvas.height=img.height;
+   ctx.drawImage(img,0,0);
+   originalData=ctx.getImageData(0,0,canvas.width,canvas.height);
+   status.innerText="✅ Design uploaded successfully";
+  };
+  img.src=reader.result;
+ };
+
+ reader.readAsDataURL(file);
+};
+
+function check(){
+ if(!img.src){status.innerText="⚠️ First upload an image";return false}
+ return true;
+}
+
+function enhance(){
+ if(!check())return;
+ ctx.filter="contrast(1.25) saturate(1.12) brightness(1.04)";
+ ctx.drawImage(img,0,0,canvas.width,canvas.height);
+ ctx.filter="none";
+ status.innerText="✨ HD enhancement applied";
+}
+
+function sharpen(){
+ if(!check())return;
+ ctx.filter="contrast(1.4) saturate(1.15)";
+ ctx.drawImage(img,0,0,canvas.width,canvas.height);
+ ctx.filter="none";
+ status.innerText="🔍 Detail enhancement applied";
+}
+
+function clean(){
+ if(!check())return;
+ ctx.filter="contrast(1.18) brightness(1.03) saturate(.95)";
+ ctx.drawImage(img,0,0,canvas.width,canvas.height);
+ ctx.filter="none";
+ status.innerText="🧹 Clean design applied";
+}
+
+function repeat(){
+ if(!check())return;
+
+ const w=canvas.width;
+ const h=canvas.height;
+ const temp=document.createElement("canvas");
+ temp.width=w*2;
+ temp.height=h*2;
+ const t=temp.getContext("2d");
+
+ t.drawImage(canvas,0,0,w,h);
+ t.drawImage(canvas,w,0,w,h);
+ t.drawImage(canvas,0,h,w,h);
+ t.drawImage(canvas,w,h,w,h);
+
+ canvas.width=w*2;
+ canvas.height=h*2;
+ ctx.drawImage(temp,0,0);
+
+ status.innerText="🔄 4-side repeat created";
+}
+
+function gray(){
+ if(!check())return;
+ ctx.filter="grayscale(1) contrast(1.2)";
+ ctx.drawImage(canvas,0,0);
+ ctx.filter="none";
+ status.innerText="🎨 Color separation preview applied";
+}
+
+function colorway(){
+ if(!check())return;
+ ctx.filter="hue-rotate(45deg) saturate(1.35)";
+ ctx.drawImage(canvas,0,0);
+ ctx.filter="none";
+ status.innerText="🌈 New colorway applied";
+}
+
+function original(){
+ if(!originalData)return;
+ canvas.width=originalData.width;
+ canvas.height=originalData.height;
+ ctx.putImageData(originalData,0,0);
+ status.innerText="↩️ Original design restored";
+}
+
+function downloadImage(){
+ if(!check())return;
+
+ const link=document.createElement("a");
+ link.download="TextileAI-Design.png";
+ link.href=canvas.toDataURL("image/png");
+ link.click();
+
+ status.innerText="⬇️ Design downloaded";
+}
+</script>
+
+</body>
+</html>
